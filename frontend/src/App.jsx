@@ -6,12 +6,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Recipes from "./pages/Recipes";
 import NotFound from "./pages/NotFound";
 
 function App() {
   return (
     <>
-      {/* Renders toast notifications anywhere in the app — placed once at the root */}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -25,12 +25,11 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="recipes" element={<Recipes />} />
+          {/* Recipe Details page (/recipes/:id) comes in the next step */}
 
-          {/* Everything nested inside this ProtectedRoute requires login.
-              More protected pages (Add Recipe, My Recipes, Profile, Favorites)
-              will be added here in upcoming steps. */}
           <Route element={<ProtectedRoute />}>
-            {/* placeholder — real protected pages added in later steps */}
+            {/* protected pages added in upcoming steps */}
           </Route>
 
           <Route path="*" element={<NotFound />} />
