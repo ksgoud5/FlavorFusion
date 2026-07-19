@@ -1,17 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
 // frontend/src/App.jsx
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <h1 className="text-4xl font-bold text-orange-600">
-        FlavorFusion 🍲 Frontend is Ready!
-      </h1>
-    </div>
-  )
+    <Routes>
+      {/* All routes nested inside MainLayout share the same Navbar + Footer */}
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Home />} />
+        {/* More pages (Login, Register, Recipes, etc.) will be added in upcoming steps */}
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+export default App;
