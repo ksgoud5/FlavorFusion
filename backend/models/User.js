@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema(
       default: "",
       maxlength: 200,
     },
+    
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,

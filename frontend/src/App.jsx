@@ -2,7 +2,9 @@
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import MainLayout from "./layouts/MainLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -16,6 +18,10 @@ import EditRecipe from "./pages/EditRecipe";
 import MyRecipes from "./pages/MyRecipes";
 import Favorites from "./pages/Favorites";
 import Profile from "./pages/Profile";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminRecipes from "./pages/admin/AdminRecipes";
+import AdminCategories from "./pages/admin/AdminCategories";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -53,6 +59,16 @@ function App() {
           </Route>
 
           <Route path="*" element={<NotFound />} />
+        </Route>
+
+        {/* Admin section — completely separate layout (no public Navbar/Footer) */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="recipes" element={<AdminRecipes />} />
+            <Route path="categories" element={<AdminCategories />} />
+          </Route>
         </Route>
       </Routes>
     </>
