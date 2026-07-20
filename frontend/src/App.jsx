@@ -10,6 +10,9 @@ import Recipes from "./pages/Recipes";
 import RecipeDetails from "./pages/RecipeDetails";
 import AddRecipe from "./pages/AddRecipe";
 import EditRecipe from "./pages/EditRecipe";
+import MyRecipes from "./pages/MyRecipes";
+import Favorites from "./pages/Favorites";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -31,11 +34,12 @@ function App() {
           <Route path="recipes" element={<Recipes />} />
           <Route path="recipes/:id" element={<RecipeDetails />} />
 
-          {/* Everything below this line requires login */}
           <Route element={<ProtectedRoute />}>
             <Route path="add-recipe" element={<AddRecipe />} />
             <Route path="edit-recipe/:id" element={<EditRecipe />} />
-            {/* My Recipes, Favorites, Profile added in upcoming steps */}
+            <Route path="my-recipes" element={<MyRecipes />} />
+            <Route path="favorites" element={<Favorites />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
