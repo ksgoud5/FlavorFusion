@@ -274,7 +274,9 @@ const RecipeDetails = () => {
           <p className="text-sm text-gray-500">Cuisine</p>
           <p className="font-bold text-gray-800">{recipe.cuisine}</p>
         </div>
+
       </div>
+
 
       {/* Nutrition Facts (only shown if the author actually filled it in) */}
       {recipe.nutrition?.calories > 0 && (
