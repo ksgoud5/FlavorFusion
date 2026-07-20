@@ -69,10 +69,24 @@ const recipeSchema = new mongoose.Schema(
     },
     
     nutrition: {
-      calories: { type: Number, default: 0 }, // kcal, per serving
-      protein: { type: Number, default: 0 },  // grams, per serving
-      carbs: { type: Number, default: 0 },    // grams, per serving
-      fat: { type: Number, default: 0 },      // grams, per serving
+      calories: { type: Number, default: 0 },
+      protein: { type: Number, default: 0 },
+      carbs: { type: Number, default: 0 },
+      fat: { type: Number, default: 0 },
+    },
+    servings: {
+      type: Number,
+      default: 4,
+    },
+    // Denormalized rating summary, kept in sync by ratingController whenever
+    // someone submits/updates a rating — same pattern as likesCount.
+    avgRating: {
+      type: Number,
+      default: 0,
+    },
+    numRatings: {
+      type: Number,
+      default: 0,
     },
   },
   {

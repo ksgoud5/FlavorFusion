@@ -15,6 +15,7 @@ export const createRecipe = async (req, res) => {
       difficulty,
       prepTime,
       cookTime,
+      servings,
       calories,
       protein,
       carbs,
@@ -51,6 +52,7 @@ export const createRecipe = async (req, res) => {
       difficulty: difficulty || "Easy",
       prepTime,
       cookTime,
+      servings: Number(servings) || 4,
       image: imagePath,
       imagePublicId,
       video: videoPath,
@@ -186,6 +188,7 @@ export const updateRecipe = async (req, res) => {
       difficulty,
       prepTime,
       cookTime,
+      servings,
       calories,
       protein,
       carbs,
@@ -199,6 +202,7 @@ export const updateRecipe = async (req, res) => {
     if (difficulty) recipe.difficulty = difficulty;
     if (prepTime) recipe.prepTime = prepTime;
     if (cookTime) recipe.cookTime = cookTime;
+    if (servings) recipe.servings = Number(servings);
     if (calories !== undefined || protein !== undefined || carbs !== undefined || fat !== undefined) {
       recipe.nutrition = {
         calories: Number(calories) || 0,

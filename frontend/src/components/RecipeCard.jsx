@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { FaHeart, FaClock, FaSignal, FaFire } from "react-icons/fa";
 import { getImageUrl } from "../utils/imageUrl";
+import StarRating from "./StarRating";
 
 const RecipeCard = ({ recipe }) => {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
@@ -39,6 +40,9 @@ const RecipeCard = ({ recipe }) => {
         <h3 className="font-bold text-gray-800 dark:text-gray-100 text-lg mb-1 line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-500 transition-colors">
           {recipe.title}
         </h3>
+        <div className="mb-1.5">
+          <StarRating avgRating={recipe.avgRating} numRatings={recipe.numRatings} size={12} />
+        </div>
         <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-3">{recipe.description}</p>
 
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-3">

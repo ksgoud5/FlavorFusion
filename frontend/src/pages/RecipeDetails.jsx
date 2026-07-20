@@ -23,6 +23,8 @@ import { getImageUrl, getVideoUrl } from "../utils/imageUrl";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CommentSection from "../components/CommentSection";
 import ConfirmDialog from "../components/ConfirmDialog";
+import StarRating from "../components/StarRating";
+import InteractiveStarRating from "../components/InteractiveStarRating";
 
 const RecipeDetails = () => {
   const { id } = useParams();
@@ -33,6 +35,10 @@ const RecipeDetails = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [avgRating, setAvgRating] = useState(0);
+  const [numRatings, setNumRatings] = useState(0);
+  const [yourRating, setYourRating] = useState(0);
+  const [submittingRating, setSubmittingRating] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -46,11 +52,17 @@ const RecipeDetails = () => {
         const res = await axiosInstance.get(`/recipes/${id}`);
         setRecipe(res.data);
         setLikesCount(res.data.likesCount || 0);
+        setAvgRating(res.data.avgRating || 0);
+        setNumRatings(res.data.numRatings || 0);
 
-        // Only check like status if logged in (endpoint requires auth)
+        // Only check like status / your own rating if logged in (both require auth)
         if (isAuthenticated) {
-          const likeRes = await axiosInstance.get(`/likes/${id}/status`);
+          const [likeRes, ratingRes] = await Promise.all([
+            axiosInstance.get(`/likes/${id}/status`),
+            axiosInstance.get(`/ratings/${id}/my-rating`),
+          ]);
           setLiked(likeRes.data.liked);
+          setYourRating(ratingRes.data.yourRating);
         }
       } catch (error) {
         console.error("Failed to fetch recipe:", error);
@@ -84,6 +96,25 @@ const RecipeDetails = () => {
       setLiked(prevLiked);
       setLikesCount(prevCount);
       toast.error("Failed to update like");
+    }
+  };
+  const handleRate = async (star) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to rate recipes");
+      return;
+    }
+
+    setSubmittingRating(true);
+    try {
+      const res = await axiosInstance.post(`/ratings/${id}`, { value: star });
+      setAvgRating(res.data.avgRating);
+      setNumRatings(res.data.numRatings);
+      setYourRating(res.data.yourRating);
+      toast.success("Rating submitted!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to submit rating");
+    } finally {
+      setSubmittingRating(false);
     }
   };
 
@@ -152,6 +183,9 @@ const RecipeDetails = () => {
             </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">{recipe.title}</h1>
+          <div className="mt-2">
+            <StarRating avgRating={avgRating} numRatings={numRatings} size={18} />
+          </div>
           <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm">
             {recipe.author?.profilePicture ? (
               <img src={getImageUrl(recipe.author.profilePicture)} alt="" className="w-6 h-6 rounded-full object-cover" />
@@ -209,10 +243,17 @@ const RecipeDetails = () => {
           {favorited ? <FaBookmark /> : <FaRegBookmark />} {favorited ? "Saved" : "Save"}
         </button>
       </div>
+      {/* Rate this recipe */}
+      <div className="mb-8 bg-white border border-gray-100 rounded-2xl p-5">
+        <p className="text-sm font-medium text-gray-700 mb-2">
+          {yourRating > 0 ? "Your rating" : "Rate this recipe"}
+        </p>
+        <InteractiveStarRating value={yourRating} onRate={handleRate} />
+        {submittingRating && <p className="text-xs text-gray-400 mt-2">Saving...</p>}
+      </div>
 
       {/* Stats */}
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 bg-orange-50 rounded-2xl p-5 mb-8 text-center">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-orange-50 rounded-2xl p-5 mb-8 text-center">
         <div>
           <FaClock className="mx-auto text-orange-600 mb-1" />
           <p className="text-sm text-gray-500">Prep Time</p>
@@ -222,6 +263,11 @@ const RecipeDetails = () => {
           <FaFire className="mx-auto text-orange-600 mb-1" />
           <p className="text-sm text-gray-500">Cook Time</p>
           <p className="font-bold text-gray-800">{recipe.cookTime} min</p>
+        </div>
+        <div>
+          <FaUsers className="mx-auto text-orange-600 mb-1" />
+          <p className="text-sm text-gray-500">Servings</p>
+          <p className="font-bold text-gray-800">{recipe.servings || 4}</p>
         </div>
         <div>
           <FaSignal className="mx-auto text-orange-600 mb-1" />

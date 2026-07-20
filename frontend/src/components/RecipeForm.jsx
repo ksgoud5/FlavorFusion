@@ -21,6 +21,7 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
   const [difficulty, setDifficulty] = useState(initialData?.difficulty || "Easy");
   const [prepTime, setPrepTime] = useState(initialData?.prepTime || "");
   const [cookTime, setCookTime] = useState(initialData?.cookTime || "");
+  const [servings, setServings] = useState(initialData?.servings || 4);
 
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
@@ -114,6 +115,7 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
     formData.append("difficulty", difficulty);
     formData.append("prepTime", prepTime);
     formData.append("cookTime", cookTime);
+    formData.append("servings", servings || 4);
     formData.append("calories", calories || 0);
     formData.append("protein", protein || 0);
     formData.append("carbs", carbs || 0);
@@ -205,8 +207,8 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
         </div>
       </div>
 
-      {/* Prep / Cook Time */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Prep / Cook Time / Servings */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Prep Time (minutes)</label>
           <input
@@ -232,6 +234,17 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
             }`}
           />
           {errors.cookTime && <p className="text-red-500 text-sm mt-1">{errors.cookTime}</p>}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Servings</label>
+          <input
+            type="number"
+            min="1"
+            value={servings}
+            onChange={(e) => setServings(e.target.value)}
+            placeholder="4"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          />
         </div>
       </div>
         {/* Nutrition Info (optional) */}
