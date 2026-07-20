@@ -6,6 +6,7 @@ import axiosInstance from "../utils/axiosInstance";
 import RecipeCard from "../components/RecipeCard";
 import Pagination from "../components/Pagination";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SkeletonCard from "../components/SkeletonCard";
 
 const CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Dessert", "Snack", "Appetizer"];
 const CUISINES = ["Italian", "Indian", "Chinese", "Mexican", "American", "Thai", "Other"];
@@ -170,7 +171,11 @@ const Recipes = () => {
         {/* Results */}
         <div className="flex-1">
           {loading ? (
-            <LoadingSpinner fullScreen />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
           ) : recipes.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-xl">
               <p className="text-gray-500 text-lg">No recipes found matching your criteria.</p>

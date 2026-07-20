@@ -7,6 +7,7 @@ import RecipeCard from "../components/RecipeCard";
 import CategoryCard from "../components/CategoryCard";
 import SectionHeader from "../components/SectionHeader";
 import LoadingSpinner from "../components/LoadingSpinner";
+import PageTransition from "../components/PageTransition";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -47,8 +48,8 @@ const Home = () => {
     }
   };
 
-  return (
-    <div>
+return (
+    <PageTransition>
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-orange-50 via-orange-100 to-amber-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
@@ -162,7 +163,7 @@ const Home = () => {
           </section>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 };
 

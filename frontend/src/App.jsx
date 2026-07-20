@@ -25,7 +25,11 @@ function App() {
         position="top-center"
         toastOptions={{
           duration: 3000,
-          style: { fontSize: "14px" },
+          style: {
+            fontSize: "14px",
+            background: "var(--toast-bg, #fff)",
+            color: "var(--toast-color, #1f2937)",
+          },
         }}
       />
 
