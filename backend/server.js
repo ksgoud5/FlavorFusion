@@ -11,6 +11,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import likeRoutes from "./routes/likeRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -34,6 +35,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.use((err, req, res, next) => {
   if (err) {

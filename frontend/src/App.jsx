@@ -9,6 +9,8 @@ import Register from "./pages/Register";
 import Recipes from "./pages/Recipes";
 import RecipeDetails from "./pages/RecipeDetails";
 import Categories from "./pages/Categories";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import AddRecipe from "./pages/AddRecipe";
 import EditRecipe from "./pages/EditRecipe";
 import MyRecipes from "./pages/MyRecipes";
@@ -35,6 +37,8 @@ function App() {
           <Route path="recipes" element={<Recipes />} />
           <Route path="recipes/:id" element={<RecipeDetails />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="about" element={<About />} />
+          <Route path="contact" element={<Contact />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="add-recipe" element={<AddRecipe />} />
