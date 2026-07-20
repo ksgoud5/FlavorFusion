@@ -1,1 +1,11 @@
+/* frontend/src/index.css */
 @import "tailwindcss";
+
+/* Tailwind v4: explicitly tell it to use class-based dark mode
+   (toggled via JS by adding/removing "dark" on <html>), rather than
+   automatically following the OS setting on every page load. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
