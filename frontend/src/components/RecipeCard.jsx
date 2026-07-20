@@ -1,6 +1,6 @@
 // frontend/src/components/RecipeCard.jsx
 import { Link } from "react-router-dom";
-import { FaHeart, FaClock, FaSignal } from "react-icons/fa";
+import { FaHeart, FaClock, FaSignal, FaFire } from "react-icons/fa";
 import { getImageUrl } from "../utils/imageUrl";
 
 const RecipeCard = ({ recipe }) => {
@@ -48,6 +48,11 @@ const RecipeCard = ({ recipe }) => {
           <span className="flex items-center gap-1">
             <FaSignal /> {recipe.cuisine}
           </span>
+          {recipe.nutrition?.calories > 0 && (
+            <span className="flex items-center gap-1">
+              <FaFire className="text-orange-500" /> {recipe.nutrition.calories} kcal
+            </span>
+          )}
           {recipe.author?.name && (
             <span className="truncate max-w-[80px]">by {recipe.author.name}</span>
           )}

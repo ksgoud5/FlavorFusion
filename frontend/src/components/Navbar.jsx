@@ -141,6 +141,11 @@ const Navbar = () => {
                 <Link to="/my-recipes" onClick={() => setMenuOpen(false)} className="text-gray-700 dark:text-gray-200 font-medium">My Recipes</Link>
                 <Link to="/profile" onClick={() => setMenuOpen(false)} className="text-gray-700 dark:text-gray-200 font-medium">My Profile</Link>
                 <button onClick={handleLogout} className="text-left text-red-600 font-medium">Logout</button>
+                {user?.isAdmin && (
+                  <Link to="/admin" className="block px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    Admin Dashboard
+                  </Link>
+                )}
               </>
             ) : (
               <>

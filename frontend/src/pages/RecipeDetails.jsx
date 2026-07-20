@@ -13,6 +13,9 @@ import {
   FaEdit,
   FaTrash,
   FaUserCircle,
+  FaDrumstickBite,
+  FaBreadSlice,
+  FaTint,
 } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import { useAuth } from "../context/AuthContext";
@@ -208,6 +211,7 @@ const RecipeDetails = () => {
       </div>
 
       {/* Stats */}
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-4 bg-orange-50 rounded-2xl p-5 mb-8 text-center">
         <div>
           <FaClock className="mx-auto text-orange-600 mb-1" />
@@ -225,6 +229,36 @@ const RecipeDetails = () => {
           <p className="font-bold text-gray-800">{recipe.cuisine}</p>
         </div>
       </div>
+
+      {/* Nutrition Facts (only shown if the author actually filled it in) */}
+      {recipe.nutrition?.calories > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-800 mb-3">Nutrition Facts</h3>
+          <p className="text-sm text-gray-400 mb-3">Per serving</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white border border-gray-100 rounded-xl p-4 text-center">
+              <FaFire className="mx-auto text-orange-500 mb-1" />
+              <p className="text-lg font-bold text-gray-800">{recipe.nutrition.calories}</p>
+              <p className="text-xs text-gray-500">Calories (kcal)</p>
+            </div>
+            <div className="bg-white border border-gray-100 rounded-xl p-4 text-center">
+              <FaDrumstickBite className="mx-auto text-red-500 mb-1" />
+              <p className="text-lg font-bold text-gray-800">{recipe.nutrition.protein}g</p>
+              <p className="text-xs text-gray-500">Protein</p>
+            </div>
+            <div className="bg-white border border-gray-100 rounded-xl p-4 text-center">
+              <FaBreadSlice className="mx-auto text-yellow-600 mb-1" />
+              <p className="text-lg font-bold text-gray-800">{recipe.nutrition.carbs}g</p>
+              <p className="text-xs text-gray-500">Carbs</p>
+            </div>
+            <div className="bg-white border border-gray-100 rounded-xl p-4 text-center">
+              <FaTint className="mx-auto text-blue-500 mb-1" />
+              <p className="text-lg font-bold text-gray-800">{recipe.nutrition.fat}g</p>
+              <p className="text-xs text-gray-500">Fat</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       <p className="text-gray-600 leading-relaxed mb-8">{recipe.description}</p>

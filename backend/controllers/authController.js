@@ -33,13 +33,12 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email is already registered" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    // No manual hashing here anymore — the User model's pre("save") hook
+    // hashes the password automatically. Hashing it here too would double-hash it.
     const newUser = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
     });
 
     const token = generateToken(newUser._id);
@@ -47,11 +46,13 @@ export const registerUser = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       token,
+      // in registerUser's response:
       user: {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
         profilePicture: newUser.profilePicture,
+        isAdmin: newUser.isAdmin,
       },
     });
   } catch (error) {
@@ -85,12 +86,14 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        profilePicture: user.profilePicture,
-      },
+      // in loginUser's response:
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profilePicture,
+          isAdmin: user.isAdmin,
+        },
     });
   } catch (error) {
     console.error("Login Error:", error.message);

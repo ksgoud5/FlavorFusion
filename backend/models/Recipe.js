@@ -67,6 +67,13 @@ const recipeSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    
+    nutrition: {
+      calories: { type: Number, default: 0 }, // kcal, per serving
+      protein: { type: Number, default: 0 },  // grams, per serving
+      carbs: { type: Number, default: 0 },    // grams, per serving
+      fat: { type: Number, default: 0 },      // grams, per serving
+    },
   },
   {
     timestamps: true,

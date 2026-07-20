@@ -15,6 +15,10 @@ export const createRecipe = async (req, res) => {
       difficulty,
       prepTime,
       cookTime,
+      calories,
+      protein,
+      carbs,
+      fat,
     } = req.body;
 
     if (!title || !description || !ingredients || !steps || !category || !cuisine || !prepTime || !cookTime) {
@@ -52,6 +56,14 @@ export const createRecipe = async (req, res) => {
       video: videoPath,
       videoPublicId,
       author: req.user.id,
+      // All nutrition fields are optional — Number(undefined) is NaN, so we
+      // fall back to 0 for any field the user left blank.
+      nutrition: {
+        calories: Number(calories) || 0,
+        protein: Number(protein) || 0,
+        carbs: Number(carbs) || 0,
+        fat: Number(fat) || 0,
+      },
     });
 
     res.status(201).json({
@@ -174,6 +186,10 @@ export const updateRecipe = async (req, res) => {
       difficulty,
       prepTime,
       cookTime,
+      calories,
+      protein,
+      carbs,
+      fat,
     } = req.body;
 
     if (title) recipe.title = title;
@@ -183,6 +199,14 @@ export const updateRecipe = async (req, res) => {
     if (difficulty) recipe.difficulty = difficulty;
     if (prepTime) recipe.prepTime = prepTime;
     if (cookTime) recipe.cookTime = cookTime;
+    if (calories !== undefined || protein !== undefined || carbs !== undefined || fat !== undefined) {
+      recipe.nutrition = {
+        calories: Number(calories) || 0,
+        protein: Number(protein) || 0,
+        carbs: Number(carbs) || 0,
+        fat: Number(fat) || 0,
+      };
+    }
 
     if (ingredients) {
       try {

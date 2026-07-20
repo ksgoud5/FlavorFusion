@@ -26,6 +26,11 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
   const [videoFile, setVideoFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(initialData?.image ? getImageUrl(initialData.image) : null);
   const [videoPreview, setVideoPreview] = useState(initialData?.video ? getVideoUrl(initialData.video) : null);
+  
+  const [calories, setCalories] = useState(initialData?.nutrition?.calories || "");
+  const [protein, setProtein] = useState(initialData?.nutrition?.protein || "");
+  const [carbs, setCarbs] = useState(initialData?.nutrition?.carbs || "");
+  const [fat, setFat] = useState(initialData?.nutrition?.fat || "");
 
   const [errors, setErrors] = useState({});
 
@@ -109,6 +114,10 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
     formData.append("difficulty", difficulty);
     formData.append("prepTime", prepTime);
     formData.append("cookTime", cookTime);
+    formData.append("calories", calories || 0);
+    formData.append("protein", protein || 0);
+    formData.append("carbs", carbs || 0);
+    formData.append("fat", fat || 0);
     // Arrays must be JSON-stringified since FormData only accepts strings/files —
     // matches exactly what our backend's createRecipe/updateRecipe expect (Step 4/5).
     formData.append("ingredients", JSON.stringify(ingredients.filter((i) => i.trim())));
@@ -225,7 +234,58 @@ const RecipeForm = ({ initialData, onSubmit, submitting, submitLabel }) => {
           {errors.cookTime && <p className="text-red-500 text-sm mt-1">{errors.cookTime}</p>}
         </div>
       </div>
-
+        {/* Nutrition Info (optional) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Nutrition Info <span className="text-gray-400 font-normal">(optional, per serving)</span>
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Calories (kcal)</label>
+            <input
+              type="number"
+              min="0"
+              value={calories}
+              onChange={(e) => setCalories(e.target.value)}
+              placeholder="0"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Protein (g)</label>
+            <input
+              type="number"
+              min="0"
+              value={protein}
+              onChange={(e) => setProtein(e.target.value)}
+              placeholder="0"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Carbs (g)</label>
+            <input
+              type="number"
+              min="0"
+              value={carbs}
+              onChange={(e) => setCarbs(e.target.value)}
+              placeholder="0"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Fat (g)</label>
+            <input
+              type="number"
+              min="0"
+              value={fat}
+              onChange={(e) => setFat(e.target.value)}
+              placeholder="0"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+        </div>
+      </div>
       {/* Ingredients */}
       <div>
         <DynamicListInput
