@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import fs from "fs";
 import User from "../models/User.js";
+import cloudinary from "../config/cloudinary.js";
 
 // Helper function to create a JWT token for a given user ID
 const generateToken = (userId) => {
@@ -126,13 +127,16 @@ export const updateProfile = async (req, res) => {
     if (name) user.name = name;
     if (bio !== undefined) user.bio = bio;
 
+    // CHANGED: delete old profile picture from Cloudinary (if one exists),
+    // then save the new Cloudinary URL + public_id
     if (req.file) {
-      if (user.profilePicture) {
-        fs.unlink(`.${user.profilePicture}`, (err) => {
-          if (err) console.error("Failed to delete old profile picture:", err.message);
-        });
+      if (user.profilePicturePublicId) {
+        await cloudinary.uploader
+          .destroy(user.profilePicturePublicId)
+          .catch((err) => console.error("Failed to delete old profile picture:", err.message));
       }
-      user.profilePicture = `/uploads/images/${req.file.filename}`;
+      user.profilePicture = req.file.path;
+      user.profilePicturePublicId = req.file.filename;
     }
 
     await user.save();

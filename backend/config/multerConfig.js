@@ -1,40 +1,35 @@
 // backend/config/multerConfig.js
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "./cloudinary.js";
 
-// Ensure upload folders exist (in case they were deleted or missing on a fresh clone)
-const imageDir = "uploads/images";
-const videoDir = "uploads/videos";
-[imageDir, videoDir].forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+// Instead of multer.diskStorage (local folder), we use CloudinaryStorage —
+// files get streamed directly to Cloudinary during the upload request itself.
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    // Route images and videos into separate Cloudinary folders,
+    // mirroring our old uploads/images vs uploads/videos structure —
+    // just for organization when browsing your Cloudinary dashboard.
+    const isVideo = file.mimetype.startsWith("video/");
 
-// Decide WHERE and under WHAT NAME to store each uploaded file
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (file.fieldname === "image") {
-      cb(null, imageDir);
-    } else if (file.fieldname === "video") {
-      cb(null, videoDir);
-    } else {
-      cb(new Error("Unexpected field name"), null);
-    }
-  },
-  filename: (req, file, cb) => {
-    // Generate a unique filename: timestamp + original extension
-    // Example: 1721300000000-a1b2c3.jpg
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `${uniqueSuffix}${ext}`);
+    return {
+      folder: isVideo ? "flavorfusion/videos" : "flavorfusion/images",
+      resource_type: isVideo ? "video" : "image",
+      // Cloudinary auto-generates a unique public_id if we don't set one,
+      // which is exactly the "guaranteed unique filename" behavior we
+      // manually built ourselves back in Step 4 — Cloudinary does it for us now.
+      allowed_formats: isVideo
+        ? ["mp4", "webm", "mov"]
+        : ["jpg", "jpeg", "png", "webp"],
+    };
   },
 });
 
-// Only allow specific file types, reject everything else
+// Same fileFilter logic as before — an extra layer of validation
+// before the file is even sent to Cloudinary.
 const fileFilter = (req, file, cb) => {
-  if (file.fieldname === "image") {
+  if (file.fieldname === "image" || file.fieldname === "profilePicture") {
     const allowedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
     if (allowedImageTypes.includes(file.mimetype)) {
       cb(null, true);
@@ -53,13 +48,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Main upload middleware — accepts one image file AND one video file (both optional)
-// in a single form submission, under field names "image" and "video"
 const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50 MB max per file (covers short recipe videos)
+    fileSize: 50 * 1024 * 1024, // 50MB max, same as before
   },
 });
 

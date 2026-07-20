@@ -1,19 +1,16 @@
 // frontend/src/utils/imageUrl.js
-// Our backend returns relative paths like "/uploads/images/abc.jpg".
-// This helper turns that into a full URL the <img>/<video> tags can actually load,
-// and provides a fallback placeholder when no image exists.
-
-const UPLOADS_BASE = import.meta.env.VITE_UPLOADS_URL; // e.g. http://localhost:5000
+// Cloudinary URLs are already complete (e.g. https://res.cloudinary.com/...),
+// so we no longer need to prepend a backend base URL. We keep this file
+// around as a single centralized place for the "no image" fallback logic,
+// so components don't need to change at all — just this one helper.
 
 export const getImageUrl = (path) => {
   if (!path) {
-    // A simple inline placeholder so broken images never show the ugly browser "broken image" icon
     return "https://placehold.co/600x400?text=No+Image";
   }
-  return `${UPLOADS_BASE}${path}`;
+  return path; // already a full Cloudinary URL
 };
 
 export const getVideoUrl = (path) => {
-  if (!path) return "";
-  return `${UPLOADS_BASE}${path}`;
+  return path || ""; // already a full Cloudinary URL, or empty if none
 };

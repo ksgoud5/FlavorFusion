@@ -43,11 +43,19 @@ const recipeSchema = new mongoose.Schema(
       required: [true, "Cooking time is required"],
     },
     image: {
-      type: String, // stores the file path/URL of the uploaded image
+      type: String,
+      default: "",
+    },
+    imagePublicId: {
+      type: String,
       default: "",
     },
     video: {
-      type: String, // stores the file path/URL of the uploaded video (optional)
+      type: String,
+      default: "",
+    },
+    videoPublicId: {
+      type: String,
       default: "",
     },
     author: {

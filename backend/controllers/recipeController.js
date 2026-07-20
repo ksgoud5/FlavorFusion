@@ -1,9 +1,8 @@
 // backend/controllers/recipeController.js
 import Recipe from "../models/Recipe.js";
-import fs from "fs";
+import cloudinary from "../config/cloudinary.js";
 
 // @route   POST /api/recipes
-// @desc    Create a new recipe (with optional image + video upload)
 export const createRecipe = async (req, res) => {
   try {
     const {
@@ -30,8 +29,13 @@ export const createRecipe = async (req, res) => {
       return res.status(400).json({ message: "Ingredients and steps must be valid arrays" });
     }
 
-    const imagePath = req.files?.image ? `/uploads/images/${req.files.image[0].filename}` : "";
-    const videoPath = req.files?.video ? `/uploads/videos/${req.files.video[0].filename}` : "";
+    // CHANGED: with CloudinaryStorage, req.files.image[0].path is now the
+    // full Cloudinary URL (e.g. https://res.cloudinary.com/.../abc123.jpg),
+    // and .filename is the Cloudinary public_id (needed later for deletion).
+    const imagePath = req.files?.image ? req.files.image[0].path : "";
+    const imagePublicId = req.files?.image ? req.files.image[0].filename : "";
+    const videoPath = req.files?.video ? req.files.video[0].path : "";
+    const videoPublicId = req.files?.video ? req.files.video[0].filename : "";
 
     const newRecipe = await Recipe.create({
       title,
@@ -44,7 +48,9 @@ export const createRecipe = async (req, res) => {
       prepTime,
       cookTime,
       image: imagePath,
+      imagePublicId,
       video: videoPath,
+      videoPublicId,
       author: req.user.id,
     });
 
@@ -59,8 +65,6 @@ export const createRecipe = async (req, res) => {
 };
 
 // @route   GET /api/recipes
-// @desc    Get all recipes with search, filter, sort, and pagination
-// @query   search, category, cuisine, difficulty, sort, page, limit
 export const getAllRecipes = async (req, res) => {
   try {
     const {
@@ -73,12 +77,9 @@ export const getAllRecipes = async (req, res) => {
       limit = 12,
     } = req.query;
 
-    // Build a MongoDB filter object dynamically based on which query params were sent
     const filter = {};
 
     if (search) {
-      // $or means "match ANY of these conditions"
-      // $regex with "i" option = case-insensitive partial text match
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
@@ -89,17 +90,14 @@ export const getAllRecipes = async (req, res) => {
     if (cuisine) filter.cuisine = cuisine;
     if (difficulty) filter.difficulty = difficulty;
 
-    // Decide sort order
-    let sortOption = { createdAt: -1 }; // default: newest first
+    let sortOption = { createdAt: -1 };
     if (sort === "oldest") sortOption = { createdAt: 1 };
     if (sort === "mostLiked") sortOption = { likesCount: -1 };
 
-    // Pagination math
     const pageNumber = Math.max(1, parseInt(page));
     const limitNumber = Math.max(1, parseInt(limit));
     const skip = (pageNumber - 1) * limitNumber;
 
-    // Run the query and count total matches (for frontend pagination controls)
     const [recipes, totalRecipes] = await Promise.all([
       Recipe.find(filter)
         .populate("author", "name profilePicture")
@@ -122,7 +120,6 @@ export const getAllRecipes = async (req, res) => {
 };
 
 // @route   GET /api/recipes/:id
-// @desc    Get a single recipe by ID
 export const getRecipeById = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id).populate(
@@ -137,13 +134,11 @@ export const getRecipeById = async (req, res) => {
     res.status(200).json(recipe);
   } catch (error) {
     console.error("Get Recipe Error:", error.message);
-    // Invalid MongoDB ObjectId format also lands here
     res.status(500).json({ message: "Server error while fetching recipe" });
   }
 };
 
 // @route   GET /api/recipes/user/my-recipes
-// @desc    Get all recipes created by the currently logged-in user
 export const getMyRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.find({ author: req.user.id }).sort({
@@ -157,7 +152,6 @@ export const getMyRecipes = async (req, res) => {
 };
 
 // @route   PUT /api/recipes/:id
-// @desc    Update a recipe (only by its original author)
 export const updateRecipe = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
@@ -166,7 +160,6 @@ export const updateRecipe = async (req, res) => {
       return res.status(404).json({ message: "Recipe not found" });
     }
 
-    // Ownership check — compare the logged-in user's ID with the recipe's author ID
     if (recipe.author.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to edit this recipe" });
     }
@@ -183,7 +176,6 @@ export const updateRecipe = async (req, res) => {
       cookTime,
     } = req.body;
 
-    // Only update fields that were actually sent (partial update support)
     if (title) recipe.title = title;
     if (description) recipe.description = description;
     if (category) recipe.category = category;
@@ -208,26 +200,26 @@ export const updateRecipe = async (req, res) => {
       }
     }
 
-    // If a new image was uploaded, delete the old one from disk and replace it
+    // CHANGED: delete the OLD file from Cloudinary using its public_id
+    // (cloudinary.uploader.destroy), instead of fs.unlink on a local path.
     if (req.files?.image) {
-      if (recipe.image) {
-        const oldImagePath = `.${recipe.image}`; // e.g. "./uploads/images/old.jpg"
-        fs.unlink(oldImagePath, (err) => {
-          if (err) console.error("Failed to delete old image:", err.message);
-        });
+      if (recipe.imagePublicId) {
+        await cloudinary.uploader.destroy(recipe.imagePublicId).catch((err) =>
+          console.error("Failed to delete old image from Cloudinary:", err.message)
+        );
       }
-      recipe.image = `/uploads/images/${req.files.image[0].filename}`;
+      recipe.image = req.files.image[0].path;
+      recipe.imagePublicId = req.files.image[0].filename;
     }
 
-    // Same logic for video
     if (req.files?.video) {
-      if (recipe.video) {
-        const oldVideoPath = `.${recipe.video}`;
-        fs.unlink(oldVideoPath, (err) => {
-          if (err) console.error("Failed to delete old video:", err.message);
-        });
+      if (recipe.videoPublicId) {
+        await cloudinary.uploader
+          .destroy(recipe.videoPublicId, { resource_type: "video" })
+          .catch((err) => console.error("Failed to delete old video from Cloudinary:", err.message));
       }
-      recipe.video = `/uploads/videos/${req.files.video[0].filename}`;
+      recipe.video = req.files.video[0].path;
+      recipe.videoPublicId = req.files.video[0].filename;
     }
 
     const updatedRecipe = await recipe.save();
@@ -243,7 +235,6 @@ export const updateRecipe = async (req, res) => {
 };
 
 // @route   DELETE /api/recipes/:id
-// @desc    Delete a recipe (only by its original author)
 export const deleteRecipe = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
@@ -256,16 +247,16 @@ export const deleteRecipe = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to delete this recipe" });
     }
 
-    // Clean up uploaded files from disk before deleting the database record
-    if (recipe.image) {
-      fs.unlink(`.${recipe.image}`, (err) => {
-        if (err) console.error("Failed to delete image file:", err.message);
-      });
+    // CHANGED: delete from Cloudinary instead of local disk
+    if (recipe.imagePublicId) {
+      await cloudinary.uploader.destroy(recipe.imagePublicId).catch((err) =>
+        console.error("Failed to delete image from Cloudinary:", err.message)
+      );
     }
-    if (recipe.video) {
-      fs.unlink(`.${recipe.video}`, (err) => {
-        if (err) console.error("Failed to delete video file:", err.message);
-      });
+    if (recipe.videoPublicId) {
+      await cloudinary.uploader
+        .destroy(recipe.videoPublicId, { resource_type: "video" })
+        .catch((err) => console.error("Failed to delete video from Cloudinary:", err.message));
     }
 
     await recipe.deleteOne();
