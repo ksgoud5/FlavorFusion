@@ -26,6 +26,7 @@ import CommentSection from "../components/CommentSection";
 import ConfirmDialog from "../components/ConfirmDialog";
 import StarRating from "../components/StarRating";
 import InteractiveStarRating from "../components/InteractiveStarRating";
+//import ShareMenu from "../components/ShareMenu";
 
 const RecipeDetails = () => {
   const { id } = useParams();
@@ -224,8 +225,8 @@ const RecipeDetails = () => {
         className="w-full h-72 md:h-96 object-cover rounded-2xl mb-6"
       />
 
-      {/* Like / Favorite bar */}
-      <div className="flex items-center gap-4 mb-8">
+     {/* Like / Favorite / Share bar */}
+      <div className="flex flex-wrap items-center gap-4 mb-8">
         <button
           onClick={handleLikeToggle}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full border font-medium transition ${
@@ -243,6 +244,8 @@ const RecipeDetails = () => {
         >
           {favorited ? <FaBookmark /> : <FaRegBookmark />} {favorited ? "Saved" : "Save"}
         </button>
+
+        {/*<ShareMenu title={recipe.title} description={recipe.description} />*/}
       </div>
       {/* Rate this recipe */}
       <div className="mb-8 bg-white border border-gray-100 rounded-2xl p-5">
