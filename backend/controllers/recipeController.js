@@ -79,6 +79,8 @@ export const createRecipe = async (req, res) => {
 };
 
 // @route   GET /api/recipes
+// @desc    Get all recipes with search, filter, sort, and pagination
+// @query   search, category, cuisine, difficulty, sort, page, limit
 export const getAllRecipes = async (req, res) => {
   try {
     const {
@@ -91,35 +93,82 @@ export const getAllRecipes = async (req, res) => {
       limit = 12,
     } = req.query;
 
-    const filter = {};
+    const match = {};
 
     if (search) {
-      filter.$or = [
+      match.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
       ];
     }
 
-    if (category) filter.category = category;
-    if (cuisine) filter.cuisine = cuisine;
-    if (difficulty) filter.difficulty = difficulty;
+    if (category) match.category = category;
+    if (cuisine) match.cuisine = cuisine;
+    if (difficulty) match.difficulty = difficulty;
 
-    let sortOption = { createdAt: -1 };
-    if (sort === "oldest") sortOption = { createdAt: 1 };
-    if (sort === "mostLiked") sortOption = { likesCount: -1 };
+    // Maps a friendly "sort" query value to the actual field(s) to sort by.
+    // Most of these fields (totalTime, numIngredients, numSteps) don't exist
+    // on the document itself — they're computed below via $addFields.
+    const sortMap = {
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      mostLiked: { likesCount: -1 },
+      topRated: { avgRating: -1 },
+      highProtein: { "nutrition.protein": -1 },
+      quickest: { totalTime: 1 },
+      fewestIngredients: { numIngredients: 1 },
+      fewestSteps: { numSteps: 1 },
+    };
+    const sortStage = sortMap[sort] || sortMap.newest;
 
     const pageNumber = Math.max(1, parseInt(page));
     const limitNumber = Math.max(1, parseInt(limit));
     const skip = (pageNumber - 1) * limitNumber;
 
-    const [recipes, totalRecipes] = await Promise.all([
-      Recipe.find(filter)
-        .populate("author", "name profilePicture")
-        .sort(sortOption)
-        .skip(skip)
-        .limit(limitNumber),
-      Recipe.countDocuments(filter),
-    ]);
+    const pipeline = [
+      { $match: match },
+      {
+        // Compute the fields we might need to sort by. $ifNull guards
+        // against older documents where an array field could be missing.
+        $addFields: {
+          totalTime: {
+            $add: [{ $ifNull: ["$prepTime", 0] }, { $ifNull: ["$cookTime", 0] }],
+          },
+          numIngredients: { $size: { $ifNull: ["$ingredients", []] } },
+          numSteps: { $size: { $ifNull: ["$steps", []] } },
+        },
+      },
+      { $sort: sortStage },
+      {
+        // $facet runs two parallel sub-pipelines in a single DB round trip:
+        // "data" gets the actual paginated results (with author populated
+        // via $lookup, since aggregate doesn't support .populate()),
+        // "totalCount" gets the total match count for pagination.
+        $facet: {
+          data: [
+            { $skip: skip },
+            { $limit: limitNumber },
+            {
+              $lookup: {
+                from: "users",
+                let: { authorId: "$author" },
+                pipeline: [
+                  { $match: { $expr: { $eq: ["$_id", "$$authorId"] } } },
+                  { $project: { name: 1, profilePicture: 1 } },
+                ],
+                as: "author",
+              },
+            },
+            { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
+          ],
+          totalCount: [{ $count: "count" }],
+        },
+      },
+    ];
+
+    const result = await Recipe.aggregate(pipeline);
+    const recipes = result[0].data;
+    const totalRecipes = result[0].totalCount[0]?.count || 0;
 
     res.status(200).json({
       recipes,

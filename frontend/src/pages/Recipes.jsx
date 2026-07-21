@@ -163,6 +163,11 @@ const Recipes = () => {
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
                 <option value="mostLiked">Most Liked</option>
+                <option value="topRated">Top Rated</option>
+                <option value="highProtein">Highest Protein</option>
+                <option value="quickest">Quickest to Make</option>
+                <option value="fewestIngredients">Fewest Ingredients</option>
+                <option value="fewestSteps">Fewest Steps</option>
               </select>
             </div>
           </div>
